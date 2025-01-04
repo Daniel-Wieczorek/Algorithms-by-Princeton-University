@@ -1,13 +1,48 @@
+```java
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+/**
+ * This class implements a solution to the problem of determining the earliest 
+ * time at which all members in a social network are connected based on a series 
+ * of friendship logs. The problem is solved using the Union-Find (also known as 
+ * Disjoint Set) data structure, with enhancements to track the largest element 
+ * in each connected component. The Union-Find structure is optimized with path 
+ * compression and union by size to ensure logarithmic time complexity for 
+ * operations.
+ * 
+ * The method `findEarliestConnection()` finds the earliest timestamp at which 
+ * all members are connected. It processes friendship logs in chronological order 
+ * and uses the Union-Find data structure to track the connected components.
+ * 
+ * Key functionalities:
+ * - `UnionFind` class implements the Union-Find data structure with `find()`, 
+ *   `union()`, `connected()`, and `findLargest()` methods.
+ * - `find()` returns the root of the set containing a given element.
+ * - `findLargest()` returns the largest element in the connected component 
+ *   containing the given element.
+ * - The `union()` method merges two sets if they are not already connected.
+ * - The `count()` method returns the number of disjoint sets.
+ * - `findEarliestConnection()` processes the log entries and returns the 
+ *   earliest timestamp when all members are connected.
+ * 
+ * This solution ensures a time complexity of O(m log n) where m is the number 
+ * of logs and n is the number of members.
+ */
+
 public class SocialNetworkConnection {
+    
+    // Inner class implementing Union-Find data structure with size and largest element tracking.
     private class UnionFind {
-        private int[] parent;
-        private int[] size;
-        private int[] largest;
-        private int count;
+        private int[] parent;  // Stores the parent of each element
+        private int[] size;    // Stores the size of each set
+        private int[] largest; // Stores the largest element in each connected component
+        private int count;     // Number of disjoint sets
         
+        /**
+         * Constructor to initialize the Union-Find data structure.
+         * @param n The number of elements in the set.
+         */
         public UnionFind(int n) {
             count = n;
             parent = new int[n];
@@ -20,26 +55,44 @@ public class SocialNetworkConnection {
             }
         }
         
+        /**
+         * Finds the root of the set containing element p with path compression.
+         * @param p The element to find the root for.
+         * @return The root of the set containing element p.
+         */
         public int find(int p) {
             validate(p);
             while (p != parent[p]) {
-                parent[p] = parent[parent[p]];
+                parent[p] = parent[parent[p]];  // Path compression
                 p = parent[p];
             }
             return p;
         }
         
+        /**
+         * Finds the largest element in the connected component containing element p.
+         * @param p The element to find the largest in its component.
+         * @return The largest element in the connected component of element p.
+         */
         public int findLargest(int p) {
             validate(p);
             return largest[find(p)];
         }
         
+        /**
+         * Merges the sets containing elements p and q. 
+         * The set with the larger size becomes the root, and the largest element 
+         * is updated accordingly.
+         * @param p The first element.
+         * @param q The second element.
+         */
         public void union(int p, int q) {
             int rootP = find(p);
             int rootQ = find(q);
             
-            if (rootP == rootQ) return;
+            if (rootP == rootQ) return;  // They are already in the same set
             
+            // Union by size: attach smaller tree to larger one
             if (size[rootP] < size[rootQ]) {
                 parent[rootP] = rootQ;
                 size[rootQ] += size[rootP];
@@ -52,14 +105,29 @@ public class SocialNetworkConnection {
             count--;
         }
         
+        /**
+         * Checks if elements p and q are in the same set (connected).
+         * @param p The first element.
+         * @param q The second element.
+         * @return True if p and q are connected, false otherwise.
+         */
         public boolean connected(int p, int q) {
             return find(p) == find(q);
         }
         
+        /**
+         * Returns the number of disjoint sets.
+         * @return The number of disjoint sets.
+         */
         public int count() {
             return count;
         }
         
+        /**
+         * Validates if element p is within the valid range.
+         * @param p The element to validate.
+         * @throws IllegalArgumentException if p is out of range.
+         */
         private void validate(int p) {
             int n = parent.length;
             if (p < 0 || p >= n) {
@@ -68,6 +136,15 @@ public class SocialNetworkConnection {
         }
     }
 
+    /**
+     * Finds the earliest timestamp at which all members in the social network are 
+     * connected, based on friendship logs.
+     * @param n The number of members in the network.
+     * @param logs A 2D array representing the friendship logs. Each log contains 
+     *             a timestamp and two member indices forming a friendship.
+     * @return The earliest timestamp at which all members are connected, or -1 
+     *         if it's not possible.
+     */
     public static long findEarliestConnection(int n, int[][] logs) {
         UnionFind uf = new SocialNetworkConnection().new UnionFind(n);
         
@@ -78,6 +155,7 @@ public class SocialNetworkConnection {
             
             uf.union(member1, member2);
             
+            // If all members are connected, return the current timestamp
             if (uf.count() == 1) {
                 return timestamp;
             }
@@ -86,7 +164,8 @@ public class SocialNetworkConnection {
         return -1; // No full connection found
     }
 
-
+    // Test methods to validate the functionality of the implementation.
+    
     @Test
     public void testBasicConnection() {
         int n = 4;
@@ -153,3 +232,4 @@ public class SocialNetworkConnection {
         org.junit.runner.JUnitCore.main("SocialNetworkConnection");
     }
 }
+```
